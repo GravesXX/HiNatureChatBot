@@ -1,0 +1,15 @@
+# Ignore AWS credentials if accidentally placed here
+aws/credentials
+aws/config
+aws/rootkey.csv
+
+# Ignore system files
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+# Ignore Python virtual env
+.venv/
+__pycache__/
+*.pyc
