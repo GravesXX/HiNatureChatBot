@@ -1,0 +1,35 @@
+{% if settings.chatbot_enabled %}
+<div id="gw-chatbot"
+     class="gwcb-container"
+     data-endpoint="https://1vys84yrgg.execute-api.us-east-1.amazonaws.com/chat"
+     data-shop="{{ shop.permanent_domain }}"
+     data-customer-id="{{ customer.id }}">
+<button id="gwcb-toggle" class="gwcb-toggle" aria-expanded="false" aria-controls="gwcb-panel" aria-label="Open chat">💬</button>
+
+
+<div id="gwcb-panel" class="gwcb-panel" hidden>
+<div class="gwcb-header">
+<div class="gwcb-title">Need help?</div>
+<button id="gwcb-close" class="gwcb-close" aria-label="Close chat">✕</button>
+</div>
+<div id="gwcb-log" class="gwcb-log" role="log"></div>
+<form id="gwcb-form" class="gwcb-form" autocomplete="off">
+<input id="gwcb-input" class="gwcb-input" name="message" placeholder="Type your message…" />
+<button id="gwcb-send" class="gwcb-send" type="submit">Send</button>
+</form>
+</div>
+</div>
+
+
+<script>
+  window.GWCB_CFG = {
+    endpoint: {{ settings.chatbot_endpoint | json }},
+    shop: {{ shop.permanent_domain | json }},
+    customerId: {{ customer.id | json }}
+  };
+</script>
+
+{{ 'chatbot.css' | asset_url | stylesheet_tag }}
+{{ 'chatbot.js'  | asset_url | script_tag }}
+
+{% endif %}
