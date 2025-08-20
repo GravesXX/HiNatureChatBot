@@ -1,10 +1,9 @@
 (function () {
-    // ------- DOM helpers & config -------
     const $ = (id) => document.getElementById(id);
-    const root     = $('gw-chatbot'); // wrapper
-    const panel    = $('gwcb-panel');  // full chat panel
-    const toggle   = $('gwcb-toggle'); // floating icon/bubble
-    const closeBtn = $('gwcb-close');  // "X" inside header
+    const root     = $('gw-chatbot');
+    const panel    = $('gwcb-panel');   // has/doesn't have .gwcb-hidden
+    const toggle   = $('gwcb-toggle');  // bubble
+    const closeBtn = $('gwcb-close');   // X
     const log      = $('gwcb-log');
     const form     = $('gwcb-form');
     const input    = $('gwcb-input');
@@ -15,7 +14,7 @@
       customerId : root?.dataset.customerId || null
     });
   
-    // ------- Session id for guests -------
+    // Session id
     const SID_KEY = 'gwcb_session_id';
     let sessionId = localStorage.getItem(SID_KEY);
     if (!sessionId) {
@@ -23,7 +22,6 @@
       localStorage.setItem(SID_KEY, sessionId);
     }
   
-    // ------- UI helpers -------
     function appendMsg(role, text) {
       const el = document.createElement('div');
       el.className = `gwcb-msg ${role}`;
@@ -39,41 +37,38 @@
       if (!on && existing) existing.remove();
     }
   
-    // === REQUIRED BEHAVIOR ===
-    // openPanel = MINIMIZE (hide panel, show icon)
-    function openPanel() {
-      if (!panel) return;
-      panel.hidden = true;                           // hide whole panel
+    // === Minimize / Expand using a CSS class ===
+    function minimize() {                 // show icon, hide panel
+      panel?.classList.add('gwcb-hidden');
+      if (toggle) toggle.style.display = '';       // visible
       toggle?.setAttribute('aria-expanded', 'false');
-      if (toggle) toggle.style.display = '';         // show icon
     }
   
-    // closePanel = EXPAND (show panel, hide icon)
-    function closePanel() {
-      if (!panel) return;
-      panel.hidden = false;                          // show whole panel
+    function expand() {                   // hide icon, show panel
+      panel?.classList.remove('gwcb-hidden');
+      if (toggle) toggle.style.display = 'none';   // hidden
       toggle?.setAttribute('aria-expanded', 'true');
-      if (toggle) toggle.style.display = 'none';     // hide icon
       input?.focus();
     }
   
-    // Initial state: if panel has the "hidden" attribute in HTML, show icon
-    if (panel?.hidden) {
+    // Initial state from HTML: if panel has .gwcb-hidden, start minimized
+    if (panel?.classList.contains('gwcb-hidden')) {
       if (toggle) toggle.style.display = '';
     } else {
       if (toggle) toggle.style.display = 'none';
     }
   
-    // ------- Events (open/close) -------
-    toggle?.addEventListener('click', () => closePanel()); // icon expands
-    closeBtn?.addEventListener('click', () => openPanel()); // X collapses
+    // Click handlers
+    toggle?.addEventListener('click', expand);  // icon opens panel
+    closeBtn?.addEventListener('click', minimize); // X collapses
   
     // ESC to collapse
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !panel?.hidden) openPanel();
+      if (e.key === 'Escape' && !panel?.classList.contains('gwcb-hidden')) {
+        minimize();
+      }
     });
   
-    // ------- Reply shape tolerance -------
     function pickReply(data) {
       return (
         data?.response ??
@@ -84,7 +79,6 @@
       );
     }
   
-    // ------- Send message flow -------
     async function sendMessage(text) {
       const cfg = getCfg();
       if (!cfg?.endpoint) {
@@ -102,7 +96,7 @@
         const res = await fetch(cfg.endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // remove to simplify CORS if not using cookies
+          credentials: 'include', // remove if you don't need cookies
           body: JSON.stringify({
             message: text.trim(),
             sessionId,
@@ -128,7 +122,6 @@
       }
     }
   
-    // Submit handler
     form?.addEventListener('submit', (e) => {
       e.preventDefault();
       const text = input?.value || '';
