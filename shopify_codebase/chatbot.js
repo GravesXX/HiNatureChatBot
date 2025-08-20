@@ -1,5 +1,5 @@
 (function () {
-  // ------- DOM helpers & config -------
+  // ------- DOM helpers & references -------
   const $ = (id) => document.getElementById(id);
   const root     = $('gw-chatbot');
   const panel    = $('gwcb-panel');   // panel container (hidden via .gwcb-hidden)
@@ -9,8 +9,20 @@
   const form     = $('gwcb-form');
   const input    = $('gwcb-input');
 
+  // ------- Config with robust fallbacks -------
+  function resolveEndpoint() {
+    // 1) data-endpoint from DOM
+    const fromData = root?.dataset?.endpoint?.trim();
+    if (fromData) return fromData;
+    // 2) global object (if snippet populates it)
+    const fromGlobal = (window.GWCB_CFG && window.GWCB_CFG.endpoint || '').trim?.();
+    if (fromGlobal) return fromGlobal;
+    // 3) no endpoint
+    return '';
+  }
+
   const getCfg = () => ({
-    endpoint   : root?.dataset.endpoint,
+    endpoint   : resolveEndpoint(),
     shop       : root?.dataset.shop,
     customerId : root?.dataset.customerId || null
   });
@@ -23,26 +35,33 @@
     localStorage.setItem(SID_KEY, sessionId);
   }
 
-  // ------- Welcome control (persist across reloads) -------
-  const WELCOME_KEY = 'gwcb_welcomed';
-  function hasWelcomed() {
-    return localStorage.getItem(WELCOME_KEY) === '1';
-  }
-  function setWelcomed() {
-    localStorage.setItem(WELCOME_KEY, '1');
-  }
-  const WELCOME_TEXT =
-    'Hi this is Hi! Nature Pet Chatbot. How can I help you today? I am always here willing to help!';
+  // ------- Welcome bubble (always first in log) -------
+  const WELCOME_ID   = 'gwcb-welcome-msg';
+  const WELCOME_TEXT = 'Hi This is Hi Nature Pet Chat Bot! How can I help you today? I am always here willing to help!';
 
-  function maybeWelcome() {
-    if (hasWelcomed()) return;
-    appendMsg('bot', WELCOME_TEXT);
-    setWelcomed();
+  function ensureWelcomeAtTop() {
+    if (!log) return;
+    let welcome = document.getElementById(WELCOME_ID);
+    if (!welcome) {
+      welcome = document.createElement('div');
+      welcome.id = WELCOME_ID;
+      welcome.className = 'gwcb-msg bot';
+      welcome.textContent = WELCOME_TEXT;
+    } else {
+      welcome.className = 'gwcb-msg bot';
+      welcome.textContent = WELCOME_TEXT;
+    }
+    if (log.firstChild !== welcome) {
+      log.insertBefore(welcome, log.firstChild);
+    }
   }
 
   // ------- UI helpers -------
   function appendMsg(role, text) {
     if (!log) return;
+    // keep welcome at top
+    ensureWelcomeAtTop();
+
     const el = document.createElement('div');
     el.className = `gwcb-msg ${role}`;
     el.textContent = text;
@@ -58,34 +77,33 @@
     if (!on && existing) existing.remove();
   }
 
-  // === Minimize / Expand using a CSS class ===
-  function minimize() {                 // show icon, hide panel
+  // ------- Minimize / Expand via class -------
+  function minimize() { // show icon, hide panel
     panel?.classList.add('gwcb-hidden');
     if (toggle) toggle.style.display = '';
     toggle?.setAttribute('aria-expanded', 'false');
   }
 
-  function expand() {                   // hide icon, show panel
+  function expand() {   // hide icon, show panel
     panel?.classList.remove('gwcb-hidden');
     if (toggle) toggle.style.display = 'none';
     toggle?.setAttribute('aria-expanded', 'true');
-    // Show welcome message the first time ever (per browser)
-    maybeWelcome();
+    ensureWelcomeAtTop();
     input?.focus();
   }
 
-  // Initial state: if panel starts minimized, bubble visible; else hidden
+  // Initial visibility
   if (panel?.classList.contains('gwcb-hidden')) {
     if (toggle) toggle.style.display = '';
   } else {
     if (toggle) toggle.style.display = 'none';
-    // If the panel starts open, greet immediately
-    maybeWelcome();
   }
+  // Ensure welcome exists on load
+  ensureWelcomeAtTop();
 
   // Click handlers
-  toggle?.addEventListener('click', expand);     // icon opens panel
-  closeBtn?.addEventListener('click', minimize); // X collapses
+  toggle?.addEventListener('click', expand);
+  closeBtn?.addEventListener('click', minimize);
 
   // ESC to collapse
   document.addEventListener('keydown', (e) => {
@@ -93,6 +111,17 @@
       minimize();
     }
   });
+
+  // ------- If endpoint missing, show hint & disable form -------
+  (function guardConfig() {
+    const cfg = getCfg();
+    if (!cfg.endpoint) {
+      console.error('[chatbot] Missing endpoint config');
+      appendMsg('bot', 'Chat not configured.');
+      // prevent submits
+      if (form) form.addEventListener('submit', (ev) => ev.preventDefault(), { once: true });
+    }
+  })();
 
   // ------- Reply shape tolerance -------
   function pickReply(data) {
