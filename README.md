@@ -24,12 +24,9 @@ The project leverages a modern cloud-native architecture with the following tech
 - **AWS Lambda** for serverless function execution.  
 - **Amazon API Gateway** to expose REST APIs.  
 - **Amazon DynamoDB** for storing customer sessions and conversation data.  
-- **Amazon Cognito** for secure authentication.  
-- **Amazon SQS** for handling asynchronous workloads.  
-- **Amazon S3 + CloudFront** for hosting and distributing chatbot assets.  
-- **Amazon Fargate** for scalable load testing.  
+- **Amazon SNS** for email notifications calling human agents escalations.
+- **Amazon S3 + CloudFront** for hosting and distributing chatbot assets.   
 - **Amazon CloudWatch** for logging and monitoring.  
-- **Amazon ECR** for container image storage.  
 
 ## AWS Technical Architecture Diagram
 Below is the architecture diagram showing how AWS services are integrated to power HiNature ChatBot:
