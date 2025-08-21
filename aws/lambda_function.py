@@ -2,7 +2,7 @@
 import json, os, re, time, uuid, html
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
-import urllib.request
+import urllib.request, urllib.parse
 
 import boto3
 
@@ -177,14 +177,18 @@ def save_session(session_id, history, state):
 # Shopify Helpers
 # =========================
 def shopify_get(path, params=None):
-    url = f"{SHOPIFY_STORE_URL}/admin/api/2025-01/{path}"
-    headers = {
-        "X-Shopify-Access-Token": SHOPIFY_ACCESS_TOKEN,
-        "Content-Type": "application/json"
-    }
-    r = requests.get(url, headers=headers, params=params)
-    r.raise_for_status()
-    return r.json()
+    query = f"?{urllib.parse.urlencode(params)}" if params else ""
+    url = f"{SHOPIFY_STORE_URL}/admin/api/2025-01/{path}{query}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "X-Shopify-Access-Token": SHOPIFY_ACCESS_TOKEN,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    )
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read().decode("utf-8"))
 
 def get_customer_by_email(email: str):
     data = shopify_get("customers/search.json", {"query": f"email:{email}"})
@@ -323,6 +327,7 @@ def handle_escalation(kind, session_id, user_message, state):
                 "Please contact support, or set SNS_TOPIC_ARN in the backend.")
     
 def handle_order_status(session_id, user_message, state):
+    # Step 1. Extract email
     email = state.get("contact")
     if not email:
         match = re.search(r"[\w\.-]+@[\w\.-]+", user_message)
@@ -332,31 +337,38 @@ def handle_order_status(session_id, user_message, state):
         else:
             return "Can you please provide the email you used for your order?"
 
+    # Step 2. Fetch customer
     try:
         customers = get_customer_by_email(email)
     except Exception as e:
         return "Sorry, I wasn’t able to reach our order system. Please try again later."
 
     if not customers:
-        return f"I couldn’t find any customer with {email}. Could you double-check?"
+        return f"We couldn’t find any customer with {email}. You may not have an account with us yet."
 
-    customer_id = customers[0]["id"]
-    orders = get_orders_by_customer(customer_id)
+    # Step 3. Fetch orders
+    try:
+        customer_id = customers[0]["id"]
+        orders = get_orders_by_customer(customer_id)
+    except Exception:
+        return "Sorry, I wasn’t able to retrieve your orders. Please try again later."
+
     if not orders:
-        return f"I found your profile but no orders linked to {email}."
+        return f"We found your profile but no orders linked to {email}."
 
+    # Step 4. Return latest order summary
     latest = orders[0]
     return summarize_order(latest)
 
 
-# =========================
+# =========================a
 # Lambda entry
 # =========================
 def lambda_handler(event, context):
     try:
         body = json.loads(event.get("body") or "{}")
-        session_id     = (body.get("session_id") or "").strip() or str(uuid.uuid4())
-        user_message   = normalize(body.get("message"))
+        session_id      = (body.get("session_id") or "").strip() or str(uuid.uuid4())
+        user_message    = normalize(body.get("message"))
         explicit_intent = body.get("intent")
 
         if not user_message:
@@ -369,17 +381,25 @@ def lambda_handler(event, context):
         # record user
         history.append({"role": "user", "content": user_message, "ts": now_epoch()})
 
-        # route
-        intent = detect_intent(user_message, explicit=explicit_intent)
+        # ---- intent handling ----
+        # if we're already inside an order_status flow, STAY there
+        prev_intent = history[-2]["intent"] if len(history) >= 2 else None
+        if prev_intent == "order_status" and "resolved" not in state:
+            intent = "order_status"
+        else:
+            intent = detect_intent(user_message, explicit=explicit_intent)
+
         reply_payload = {}
         reply_text = None
 
         if intent == "faq":
-            reply_text = handle_faq(user_message)
-            if reply_text is None:  # safety
-                reply_text = "For deliveries: orders before Friday 23:59 ship Tue/Wed; transit 1–3 business days."
+            reply_text = handle_faq(user_message) or \
+                         "For deliveries: orders before Friday 23:59 ship Tue/Wed; transit 1–3 business days."
         elif intent == "order_status":
             reply_text = handle_order_status(session_id, user_message, state)
+            # mark resolved so we don’t loop forever
+            if "order #" in reply_text.lower():
+                state["resolved"] = True
         elif intent == "delivery":
             reply_text = handle_escalation("delivery", session_id, user_message, state)
         else:
@@ -401,3 +421,4 @@ def lambda_handler(event, context):
 
     except Exception as e:
         return _resp(502, {"error": str(e)})
+
