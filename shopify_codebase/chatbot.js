@@ -155,7 +155,7 @@
         credentials: 'include', // remove if you don't need cookies
         body: JSON.stringify({
           message: text.trim(),
-          sessionId,
+          session_id: sessionId,   // match backend
           customerId: cfg.customerId,
           shop: cfg.shop
         })
