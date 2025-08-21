@@ -13,3 +13,5 @@ aws/rootkey.csv
 .venv/
 __pycache__/
 *.pyc
+
+bedrock-long-term-api-key.csv
