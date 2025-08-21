@@ -2,6 +2,7 @@
 import json, os, re, time, uuid, html
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
+import urllib.request
 
 import boto3
 
@@ -13,6 +14,10 @@ MODEL_ID       = os.getenv("MODEL_ID", "us.meta.llama3-2-1b-instruct-v1:0")
 DDB_TABLE      = os.getenv("DDB_TABLE", "HN_Sessions")            # PK: session_id (S)
 SNS_TOPIC_ARN  = os.getenv("SNS_TOPIC_ARN", "")                   # optional
 BRAND_NAME     = "Hi Nature! Pet"
+
+# Shopify
+SHOPIFY_STORE_URL   = os.getenv("SHOPIFY_STORE_URL", "https://yourstore.myshopify.com")
+SHOPIFY_ACCESS_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 
 # If True, FAQs will be paraphrased by brand_tone(); otherwise exact template is returned.
 USE_BRAND_TONE_FOR_FAQ = False
@@ -169,6 +174,40 @@ def save_session(session_id, history, state):
     )
 
 # =========================
+# Shopify Helpers
+# =========================
+def shopify_get(path, params=None):
+    url = f"{SHOPIFY_STORE_URL}/admin/api/2025-01/{path}"
+    headers = {
+        "X-Shopify-Access-Token": SHOPIFY_ACCESS_TOKEN,
+        "Content-Type": "application/json"
+    }
+    r = requests.get(url, headers=headers, params=params)
+    r.raise_for_status()
+    return r.json()
+
+def get_customer_by_email(email: str):
+    data = shopify_get("customers/search.json", {"query": f"email:{email}"})
+    return data.get("customers", [])
+
+def get_orders_by_customer(customer_id: str):
+    return shopify_get("orders.json", {"customer_id": customer_id, "status": "any"}).get("orders", [])
+
+def summarize_order(order):
+    number = order["order_number"]
+    created = datetime.fromisoformat(order["created_at"].replace("Z","+00:00")).strftime("%b %d")
+    status = order.get("fulfillment_status") or "unfulfilled"
+    reply = f"Your order #{number} placed on {created} is {status}."
+    if order.get("fulfillments"):
+        f = order["fulfillments"][0]
+        tracking = f.get("tracking_number")
+        company  = f.get("tracking_company")
+        if tracking and company:
+            reply += f" Tracking: {company} {tracking}."
+    return reply
+
+
+# =========================
 # LLM helpers (fallback + brand tone)
 # =========================
 def _clean_brand_text(t: str) -> str:
@@ -282,6 +321,33 @@ def handle_escalation(kind, session_id, user_message, state):
     else:
         return ("I can flag this for a human, but SNS isn’t configured. "
                 "Please contact support, or set SNS_TOPIC_ARN in the backend.")
+    
+def handle_order_status(session_id, user_message, state):
+    email = state.get("contact")
+    if not email:
+        match = re.search(r"[\w\.-]+@[\w\.-]+", user_message)
+        if match:
+            email = match.group(0)
+            state["contact"] = email
+        else:
+            return "Can you please provide the email you used for your order?"
+
+    try:
+        customers = get_customer_by_email(email)
+    except Exception as e:
+        return "Sorry, I wasn’t able to reach our order system. Please try again later."
+
+    if not customers:
+        return f"I couldn’t find any customer with {email}. Could you double-check?"
+
+    customer_id = customers[0]["id"]
+    orders = get_orders_by_customer(customer_id)
+    if not orders:
+        return f"I found your profile but no orders linked to {email}."
+
+    latest = orders[0]
+    return summarize_order(latest)
+
 
 # =========================
 # Lambda entry
@@ -313,7 +379,7 @@ def lambda_handler(event, context):
             if reply_text is None:  # safety
                 reply_text = "For deliveries: orders before Friday 23:59 ship Tue/Wed; transit 1–3 business days."
         elif intent == "order_status":
-            reply_text = handle_escalation("order_status", session_id, user_message, state)
+            reply_text = handle_order_status(session_id, user_message, state)
         elif intent == "delivery":
             reply_text = handle_escalation("delivery", session_id, user_message, state)
         else:
