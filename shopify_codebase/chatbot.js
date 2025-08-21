@@ -64,7 +64,8 @@
 
     const el = document.createElement('div');
     el.className = `gwcb-msg ${role}`;
-    el.textContent = text;
+    // el.textContent = text;
+    el.innerHTML = text;   // ✅ allows clickable links
     log.appendChild(el);
     log.scrollTop = log.scrollHeight;
     return el;
@@ -155,7 +156,7 @@
         credentials: 'include', // remove if you don't need cookies
         body: JSON.stringify({
           message: text.trim(),
-          session_id: sessionId,   // match backend
+          session_id: sessionId,   // <<< use snake_case to match backend
           customerId: cfg.customerId,
           shop: cfg.shop
         })

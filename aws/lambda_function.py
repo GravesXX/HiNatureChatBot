@@ -96,10 +96,14 @@ FAQS = [
         "q": "How can I calculate how much my dog eats?",
         "tags": [
             "how much to feed", "how much food", "calories", "kcal", "grams", "喂多少", "克数", "热量", "配餐",
-            "meal calculator", "计算", "calculator"
+            "meal calculator", "计算", "calculator", "how much food does my dog need to eat"
         ],
-        "a": ("There’s a ‘Meal Calculator’ section on our website—just follow the steps there to get a tailored daily amount. "
-              "You can choose between full meals or toppings across multiple recipes.")
+        "a": (
+            "There’s a ‘Meal Calculator’ section on our website—just follow the steps there to get a tailored daily amount. "
+            "You can choose between full meals or toppings across multiple recipes.<br><br>"
+            "👉 <a href='https://hinaturepet.com/#quiz-RbHqn8B' target='_blank' rel='noopener'>Try the Meal Calculator here</a>"
+        )
+
     },
     {
         "q": "Can I manage or pause my subscription?",
