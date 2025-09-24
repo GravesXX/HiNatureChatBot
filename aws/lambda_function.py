@@ -32,89 +32,352 @@ sns     = boto3.client("sns")
 FAQS = [
     {
         "q": "What is fresh cooked dog food?",
-        "tags": ["fresh cooked", "fresh food", "现做", "鲜食", "熟食", "生食对比", "what is your food"],
+        "tags": [
+            "fresh cooked", "fresh food", "现做", "鲜食", "熟食",
+            "生食对比", "what is your food",
+            "why feed fresh cooked", "what is fresh cooked food"
+        ],
         "a": ("Fresh cooked dog food is gently prepared at low temperatures to retain nutrients "
               "while eliminating harmful bacteria. It’s safer and easier to digest than raw, and "
               "more nutritious than kibble.")
     },
     {
+        "q": "Why feed fresh-cooked?",
+        "tags": [
+            "why feed fresh cooked",
+            "benefits of fresh cooked meals for dogs",
+            "why not feed kibble",
+            "is fresh cooked food healthier than kibble",
+            "why do vets recommend fresh cooked diets",
+            "is there scientific proof behind fresh cooked food",
+            "expert reasons to feed fresh cooked",
+            "why nutritionists support fresh cooked diets",
+            "为什么吃鲜食", "鲜食的好处"
+        ],
+        "a": ("Fresh-cooked meals are made from real, human-grade ingredients and gently prepared to preserve nutrients "
+              "and taste. Compared with heavily processed kibble, they’re easier to digest and closer to a dog’s natural "
+              "diet. Many pet parents see improvements in digestion, energy, coat, and stools. It’s simply balanced "
+              "nutrition from real food, made convenient.")
+    },
+    {
         "q": "Is Hi Nature! food AAFCO compliant and complete?",
-        "tags": ["AAFCO", "complete", "营养全面", "均衡", "is it balanced"],
-        "a": ("Yes. Every Hi Nature! recipe is AAFCO-compliant and formulated by pet nutritionists "
-              "and veterinarians to provide 100% complete and balanced nutrition for adult and senior dogs.")
+        "tags": [
+            "is your food AAFCO compliant",
+            "is your food complete and balanced",
+            "does Hi Nature meet AAFCO standards",
+            "do your recipes follow NRC guidelines",
+            "is your food nutritionally complete",
+            "are recipes formulated to meet standards",
+            "nutritionist verified balanced diets",
+            "AAFCO", "complete", "营养全面", "均衡", "is it balanced"
+        ],
+        "a": ("Yes. All recipes are formulated to meet AAFCO nutrient profiles and align with NRC reference values "
+              "for maintenance and growth where applicable. We routinely review formulas with veterinarians and "
+              "pet-nutrition professionals for safety and nutritional adequacy.")
     },
     {
         "q": "Is Hi Nature! Pet Canadian?",
-        "tags": ["Canadian", "加拿大", "本地", "Toronto", "are you canadian"],
+        "tags": ["Canadian", "加拿大", "本地", "Toronto", "are you canadian", "made in Canada", "本地食材"],
         "a": ("Yes—proudly Canadian. Made fresh in the Toronto area with locally sourced ingredients.")
     },
     {
-        "q": "Do you use human-grade ingredients?",
-        "tags": ["human grade", "人食级", "人用级", "ingredients", "real food"],
-        "a": ("Absolutely. Only fresh, human-grade ingredients—no meat meals, fillers, or artificial preservatives.")
+        "q": "What ingredients do you use—and what does “human-grade” mean?",
+        "tags": [
+            "what ingredients do you use",
+            "what does human grade mean",
+            "are your ingredients human grade",
+            "where do your ingredients come from",
+            "do you use feed grade ingredients",
+            "human grade", "人食级", "人用级", "ingredients", "real food"
+        ],
+        "a": ("We use fresh, human-grade meats and fish, fruits, and vegetables from trusted Canadian farms and suppliers. "
+              "We do not use feed-grade inputs, meat meals, artificial colours, flavours, or preservatives.")
     },
     {
-        "q": "Are your meals grain-free or hypoallergenic?",
-        "tags": ["grain free", "过敏", "敏感肠胃", "低致敏", "allergy", "hypoallergenic"],
-        "a": ("We offer both with and without grains. Many recipes support sensitive stomachs and use novel proteins like duck or fish.")
+        "q": "Do you add vitamins and minerals?",
+        "tags": [
+            "do you add vitamins and minerals",
+            "are vitamins included in your food",
+            "what supplements are added",
+            "do you add synthetic nutrients",
+            "how do you balance micronutrients",
+            "nutritionist formulated vitamin blend",
+            "有没有加维生素", "有没有矿物质补充"
+        ],
+        "a": ("Yes. In addition to nutrients from whole foods, we use targeted, food-grade supplements (vitamin/mineral "
+              "additions) as needed to ensure the diet is complete and balanced to AAFCO/NRC standards.")
     },
     {
         "q": "Who formulates the recipes?",
-        "tags": ["配方师", "营养师", "veterinarian", "formulate", "who makes recipes"],
-        "a": ("Meals are developed by certified pet nutritionists and reviewed by veterinarians.")
+        "tags": [
+            "who makes your recipes",
+            "who develops your food",
+            "who designs the formula",
+            "who creates the recipes",
+            "who prepares your meals",
+            "who is behind the formulation",
+            "who formulates the recipes",
+            "who balances the nutrition",
+            "who approves the recipes",
+            "who’s responsible for your formulations",
+            "who formulates your food vet or nutritionist",
+            "are your recipes formulated by a vet",
+            "are your meals created by a veterinary nutritionist",
+            "who ensures the recipes meet AAFCO/NRC standards",
+            "do veterinarians review your food",
+            "is your food developed by experts",
+            "is there a pet nutritionist behind the recipes",
+            "who guarantees the nutritional balance",
+            "who checks the recipes for health & safety",
+            "are the formulas vet-approved",
+            "配方师", "营养师", "veterinarian", "formulate", "who makes recipes"
+        ],
+        "a": ("Our recipes are developed by a pet-nutrition team and modified and finalized by licensed veterinarians. "
+              "We continuously evaluate palatability, digestibility, and nutrient targets.")
+    },
+    {
+        "q": "Are your meals grain-free or hypoallergenic?",
+        "tags": [
+            "grain free", "过敏", "敏感肠胃", "低致敏", "allergy", "hypoallergenic",
+            "sensitive stomach", "novel protein", "duck", "fish", "对谷物过敏"
+        ],
+        "a": ("We offer both with and without grains. Many recipes support sensitive stomachs and use novel proteins like duck or fish.")
     },
     {
         "q": "Can I feed Hi Nature! to my puppy?",
-        "tags": ["puppy", "幼犬", "小狗", "for puppy"],
+        "tags": [
+            "can puppies eat your food",
+            "do you have puppy recipes",
+            "for puppy", "puppy", "幼犬", "小狗",
+            "is your food good for all life stages", "puppy diet"
+        ],
         "a": ("Current recipes are intended for adult and senior dogs. Puppy formulas are in development—join our email list for updates.")
     },
     {
-        "q": "How do I store fresh cooked pet food?",
-        "tags": ["store", "storage", "保存", "冷冻", "冷藏", "how to store"],
-        "a": ("Keep meals frozen up to 6 months. After thawing, refrigerate and use within 4 days. Don’t leave at room temp >2 hours.")
+        "q": "Can my puppy or senior dog eat your food?",
+        "tags": [
+            "can puppies eat your food",
+            "can senior dogs eat your meals",
+            "is your food good for all life stages",
+            "do you have senior formulas",
+            "do you have puppy recipes",
+            "老年犬能吃吗", "幼犬能吃吗"
+        ],
+        "a": ("Puppies (0–8 months): we do not recommend using our meals as a full diet at this age. You may use Hi Nature! as a topper "
+              "alongside a complete puppy diet; discuss any changes with your veterinarian.\n"
+              "Seniors: yes. We offer a Senior Care pack with senior-friendly ingredients and portions.")
     },
     {
-        "q": "Can I microwave the food?",
-        "tags": ["microwave", "微波炉", "加热", "heat food"],
-        "a": ("You can gently warm to room temperature; avoid overheating to preserve nutrients.")
+        "q": "How do I tailor meals to my dog?",
+        "tags": [
+            "how do I tailor meals to my dog",
+            "can meals be customized for my pet",
+            "how do you calculate portions",
+            "do you personalize the nutrition plan",
+            "how do you adjust food for my dog’s needs",
+            "vet guided meal personalization",
+            "nutritionist designed feeding plan",
+            "怎么定制配餐", "如何计算克数"
+        ],
+        "a": ("Tell us about your pup’s age, weight, body condition, activity, and sensitivities, and we’ll recommend recipes and daily portions. "
+              "Start here: Meal Calculator")
+    },
+    {
+        "q": "My dog has a sensitive stomach—what should I do?",
+        "tags": [
+            "my dog has a sensitive stomach what should I do",
+            "is your food good for sensitive stomach",
+            "which recipes help digestion",
+            "do you have a sensitive stomach formula",
+            "what to feed a dog with tummy issues",
+            "expert advice on sensitive stomach feeding",
+            "敏感肠胃 怎么办", "消化不良 吃什么"
+        ],
+        "a": ("Transition gradually (we include step-by-step instructions in your first box). Many sensitive pups do well on our gentler recipes "
+              "and steady portions. If your dog has ongoing health issues or a medical history, please check with your vet.")
     },
     {
         "q": "How do I transition my dog to Hi Nature!",
-        "tags": ["transition", "换粮", "过渡", "switch food"],
+        "tags": ["transition", "换粮", "过渡", "switch food", "how to transition", "7 day transition"],
         "a": ("Use a 7-day transition: 25% new → 50% → 75% → 100%. Our Starter Box makes it easy.")
     },
     {
-        "q": "Where do you deliver and what’s the cost?",
-        "tags": ["deliver", "delivery", "shipping", "运费", "配送", "where deliver", "delivery areas", "where do you ship"],
-        "a": ("We ship within Ontario and Québec. GTA: $5.99, free over $100. Most ON & QC: $9.99, free over $150. Final rates shown at checkout.")
+        "q": "How do I store fresh cooked pet food?",
+        "tags": [
+            "how do I store fresh cooked pet food",
+            "how to keep the food fresh",
+            "how do I store the meals",
+            "do I refrigerate or freeze",
+            "how long can food stay in fridge",
+            "store", "storage", "保存", "冷冻", "冷藏", "how to store",
+            "how do I keep the food", "the way to keep the food", "the way to store the food",
+            "我怎么保存呀", "如何保鲜"
+        ],
+        "a": ("Place meals in the freezer upon arrival. Keep 1–2 daily packs in the refrigerator so you’re ready for mealtimes. "
+              "Our vacuum-sealed packs store up to 6 months frozen and up to 4 days refrigerated once thawed (unopened). Always use clean utensils.")
     },
     {
-        "q": "When will I receive my delivery?",
+        "q": "Can I microwave the food?",
+        "tags": ["microwave", "微波炉", "加热", "heat food", "can I warm the food", "加热方式"],
+        "a": ("You can gently warm to room temperature; avoid overheating to preserve nutrients.")
+    },
+    {
+        "q": "Can I re-freeze meals that aren’t fully frozen on arrival?",
         "tags": [
-            "when deliver", "到货", "发货时间", "delivery time", "到货时间",
-            "when can i get my dog food", "when can i get my dogfood", "when get dog food",
-            "when will my order arrive", "delivery arrive", "什么时候能拿到狗粮"
+            "can I refreeze meals",
+            "what if meals arrive thawed",
+            "is it safe to refreeze your food",
+            "can I re-freeze dog food",
+            "what to do if food is not fully frozen",
+            "能不能二次冷冻", "到货没完全冻住怎么办"
         ],
-        "a": ("Orders placed before Friday 23:59 ship the following Tue/Wed; transit 1–3 business days by location.")
+        "a": ("If packs feel fridge-cold to the touch (like just out of the refrigerator), you can place them back in the freezer. "
+              "If they feel warm, do not feed.")
+    },
+    {
+        "q": "How do I dispose of the packaging?",
+        "tags": [
+            "how do I dispose of packaging",
+            "is your packaging recyclable",
+            "can I recycle your insulation and packs",
+            "what to do with the box and gel packs",
+            "is your packaging eco friendly",
+            "sustainable packaging disposal",
+            "包装如何处理", "是否可回收"
+        ],
+        "a": ("Cardboard box & paper inserts: recycle curbside.\n"
+              "Gel packs: recycle the outer poly bag where facilities accept plastic film. Cut open the pack and place the gel in the household garbage "
+              "(it will dehydrate to ~0.5% of its original weight). Do not pour gel down the drain.\n"
+              "Multi-layer insulation: place in garbage.\n"
+              "Dry-ice bag (if included): allow any remaining dry ice to dissipate in a well-ventilated area away from people and pets; "
+              "dispose of the empty bag per local rules.")
     },
     {
         "q": "How can I calculate how much my dog eats?",
         "tags": [
-            "how much to feed", "how much food", "calories", "kcal", "grams", "喂多少", "克数", "热量", "配餐",
-            "meal calculator", "计算", "calculator", "how much food does my dog need to eat"
+            "how much to feed", "how much food", "calories", "kcal", "grams",
+            "喂多少", "克数", "热量", "配餐",
+            "meal calculator", "计算", "calculator",
+            "how much food does my dog need to eat",
+            "how do you calculate portions"
         ],
-        "a": (
-            "There’s a ‘Meal Calculator’ section on our website—just follow the steps there to get a tailored daily amount. "
-            "You can choose between full meals or toppings across multiple recipes.<br><br>"
-            "👉 <a href='https://hinaturepet.com/#quiz-RbHqn8B' target='_blank' rel='noopener'>Try the Meal Calculator here</a>"
-        )
-
+        "a": ("There’s a ‘Meal Calculator’ section on our website—just follow the steps there to get a tailored daily amount. "
+              "You can choose between full meals or toppings across multiple recipes.<br><br>"
+              "👉 <a href='https://hinaturepet.com/#quiz-RbHqn8B' target='_blank' rel='noopener'>Try the Meal Calculator here</a>")
+    },
+    {
+        "q": "Where do you deliver and what’s the cost?",
+        "tags": [
+            "where do you deliver",
+            "what areas do you ship to",
+            "is delivery available in my city",
+            "do you deliver outside Ontario",
+            "what is the delivery cost",
+            "shipping fees for your dog food",
+            "how is food shipped safely",
+            "deliver", "delivery", "shipping", "运费", "配送", "where deliver", "delivery areas", "where do you ship"
+        ],
+        "a": ("We ship to most Ontario and Québec key urban areas.\n"
+              "GTA addresses: free shipping.\n"
+              "Outside the GTA (ON/QC urban zones): orders under CA$150 ship at a CA$5.99 flat rate; orders CA$150+ ship free. "
+              "Availability is confirmed at checkout by postal code.")
+    },
+    {
+        "q": "When will I receive my delivery?",
+        "tags": [
+            "when will I receive my delivery",
+            "how long does shipping take",
+            "when will my food arrive",
+            "delivery time for orders",
+            "how soon will I get my box",
+            "expected delivery date",
+            "when deliver", "到货", "发货时间", "delivery time", "到货时间",
+            "when can i get my dog food", "when can i get my dogfood",
+            "when get dog food", "when will my order arrive", "delivery arrive", "什么时候能拿到狗粮"
+        ],
+        "a": ("Orders placed before Friday at midnight ship the following Tuesday or Wednesday.\n"
+              "Delivery usually takes 1–3 business days depending on your location.")
+    },
+    {
+        "q": "What’s in the Starter Box?",
+        "tags": [
+            "what’s in the starter box",
+            "what do I get in the starter box",
+            "what comes in the trial box",
+            "what meals are included in starter pack",
+            "do I get all recipes in starter box",
+            "新手礼包 里面有什么"
+        ],
+        "a": ("You’ll receive 7 fresh cooked meal packs, a Feeding Guide and storage instructions, plus a small mystery gift (toy, accessory, or treat).")
+    },
+    {
+        "q": "What if I’m not home when it’s delivered?",
+        "tags": [
+            "what if I’m not home for delivery",
+            "do I need to be home for delivery",
+            "can the food be left at my door",
+            "will food stay safe if I’m not home",
+            "how long will food stay frozen outside",
+            "不在家 怎么办", "是否需要在家收货"
+        ],
+        "a": ("Our insulated packaging and coolants are designed to keep meals cold through the delivery window. For best results, we recommend retrieving "
+              "evening deliveries the same night and placing the meals in your freezer right away. If you expect to be away longer, consider having the "
+              "box delivered to a location where someone can receive it on your behalf.")
+    },
+    {
+        "q": "Will my food arrive frozen?",
+        "tags": [
+            "will my food arrive frozen",
+            "is food delivered frozen",
+            "do meals stay frozen in transit",
+            "how is the food kept frozen",
+            "will the box be cold on arrival",
+            "到货是冷冻的吗", "运输如何保冷"
+        ],
+        "a": ("Yes. Every order is shipped with insulation and gel packs to keep the food cold while in transit. Please bring the box inside promptly and "
+              "place the packs in the freezer right away. If a pack arrives refrigerator-cold to the touch, it’s safe to feed or re-freeze.")
     },
     {
         "q": "Can I manage or pause my subscription?",
-        "tags": ["pause", "skip", "cancel", "订阅", "修改", "manage subscription"],
-        "a": ("Yes—log into your account to skip, pause, reschedule, or cancel anytime.")
+        "tags": [
+            "can I manage my subscription",
+            "can I pause my plan",
+            "can I skip deliveries",
+            "how do I change my subscription",
+            "how to update my dog’s plan",
+            "subscription flexibility options",
+            "pause", "skip", "cancel", "订阅", "修改", "manage subscription"
+        ],
+        "a": ("Yes! Simply log into your account to skip, pause, reschedule, or cancel your subscription anytime.")
     },
+    {
+        "q": "Can I return meals?",
+        "tags": [
+            "can I return meals",
+            "do you accept returns",
+            "what’s your return policy",
+            "can I send back unused packs",
+            "can I get a refund for meals",
+            "能不能退货", "是否支持退款"
+        ],
+        "a": ("Because our products are frozen and perishable, all sales are final and we can’t accept returns. If something is incorrect or there’s a "
+              "delivery issue, email hello@hinaturepet.com with your order number and photos—we’ll help promptly.")
+    },
+    {
+        "q": "Do I have to subscribe?",
+        "tags": [
+            "do I have to subscribe",
+            "can I buy one time",
+            "is subscription required",
+            "do you offer one time purchase",
+            "can I try without a plan",
+            "subscription vs one time order",
+            "必须订阅吗", "能不能一次性买"
+        ],
+        "a": ("Not necessarily. Most pet parents choose our flexible subscription for the savings and convenience—it makes sure your dog never runs out. "
+              "But if you prefer to order only when needed, you can also make a one-time purchase (8 packs minimum) at the regular price. And if you’re brand "
+              "new to Hi Nature, our Starter Box with 40% off is the best way to try us first before deciding on a plan.")
+    }
 ]
 
 # =========================
@@ -421,4 +684,3 @@ def lambda_handler(event, context):
 
     except Exception as e:
         return _resp(502, {"error": str(e)})
-
